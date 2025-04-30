@@ -1,0 +1,23 @@
+{
+    "$schema": "https://raw.githubusercontent.com/ankushKun/apm-cli/main/apm.schema.json",
+    "name": "aoxpress",
+    "vendor": "@apm",
+    "description": "api routes in ao processes",
+    "main": "source.lua",
+    "version": "1.0.0",
+    "repository": "https://github.com/ankushKun/aoxpress",
+    "license": "MIT",
+    "keywords": [
+        "express",
+        "aoxpress",
+        "http api",
+        "endpoint"
+    ],
+    "authors": [],
+    "warnings": {
+        "modifiesGlobalState": false,
+        "installMessage": ""
+    },
+    "dependencies": {},
+    "wallet": "./wallet.json"
+}
