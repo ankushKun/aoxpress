@@ -8,21 +8,40 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { connect } from "@permaweb/aoconnect";
+import { z } from "zod";
+const TagSchema = z.object({
+    name: z.string(),
+    value: z.string()
+});
+const AoFetchOptionsSchema = z.object({
+    method: z.enum(["GET", "POST"]).optional().default("GET"),
+    body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
+    params: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({})
+});
+const AoFetchResponseSchema = z.object({
+    status: z.number().optional().default(-1),
+    text: z.string().optional().default(""),
+    json: z.record(z.string(), z.any()).optional().default({}),
+    error: z.string().optional().default(""),
+});
+const ao = connect({ MODE: "legacy" });
 // location has 2 parts:
 // 1. process id (string of length 43)
 // 2. endpoint route (default is "/")
 // example: "3GxCscS3FWn6MQ4RfCxHdIOknPXwX3_99XNUmDvtGYw/name/1"
 const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     if (!options)
-        options = { method: "GET" };
-    const ao = connect({ MODE: "legacy" });
-    const pid = location.split("/")[0];
-    const endpoint = "/" + location.split("/").slice(1).join("/");
-    console.log("pid", `'${pid}'`);
-    console.log("endpoint", `'${endpoint}'`);
+        options = {};
+    // Validate location format
+    const locationParts = location.split("/");
+    const pid = locationParts[0];
+    const endpoint = "/" + locationParts.slice(1).join("/");
+    if (locationParts[0].length !== 43)
+        throw new Error("Invalid process ID length. Must be 43 characters.");
+    // Validate and parse options
+    const validatedOptions = AoFetchOptionsSchema.parse(options);
     try {
-        switch (options.method) {
+        switch (validatedOptions.method) {
             case "GET":
                 const res = yield ao.dryrun({
                     process: pid,
@@ -38,22 +57,28 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
                     });
                 });
                 if (!message) {
-                    throw new Error("No messages returned");
+                    throw new Error("No response message received");
                 }
-                try {
-                    const response = {
-                        status: ((_a = message.Tags.find((t) => t.name == "Status")) === null || _a === void 0 ? void 0 : _a.value) || -1,
-                        data: JSON.parse(message.Data)
-                    };
-                    return response;
+                // [{n,v},{n,v},{n,v}] to {n:v,n:v,n:v}
+                const tags = message.Tags.reduce((acc, t) => {
+                    acc[t.name] = t.value;
+                    return acc;
+                }, {});
+                const response = {};
+                if (tags.Status) {
+                    response.status = parseInt(tags.Status);
                 }
-                catch (err) {
-                    const response = {
-                        status: ((_b = message.Tags.find((t) => t.name == "Status")) === null || _b === void 0 ? void 0 : _b.value) || -1,
-                        data: message.Data
-                    };
-                    return response;
+                if (message.Data) {
+                    response.text = message.Data;
+                    try {
+                        response.json = JSON.parse(message.Data);
+                    }
+                    catch (err) { }
                 }
+                if (tags.Status != "200") {
+                    response.error = tags.Error || message.Data;
+                }
+                return AoFetchResponseSchema.parse(response);
             case "POST":
                 throw new Error("POST not implemented");
             default:
