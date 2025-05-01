@@ -1,6 +1,6 @@
-# AO Backend Framework
+# aoxpress + aofetch
 
-A comprehensive framework for building decentralized applications on the Arweave/AO ecosystem. This framework provides both server-side and client-side components for building robust and type-safe applications.
+Framework to define handlers and call them from the frontend using a syntax that's similar to writing and calling express apis
 
 ## Overview
 
