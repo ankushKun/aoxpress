@@ -1,4 +1,4 @@
-import { aofetch } from "aofetch"
+import { aofetch } from "ao-fetch"
 import fs from "fs"
 
 const wallet = JSON.parse(fs.readFileSync("wallet.json", "utf8"))

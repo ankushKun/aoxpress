@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
-    "aofetch": "^1.0.0"
+    "ao-fetch": "^1.0.0"
   },
   "devDependencies": {},
   "scripts": {

@@ -1,6 +1,6 @@
-# Aofetch
+# ao-fetch
 
-A client library for communicating with AO processes. Aofetch provides a familiar HTTP-like interface for making requests to AO processes, similar to the `fetch` API.
+A client library for communicating with AO processes. ao-fetch provides a familiar HTTP-like interface for making requests to AO processes, similar to the `fetch` API.
 
 Best used with [aoxpress](https://github.com/ankushKun/aoxpress/blob/main/aoxpress/README.md)
 
@@ -9,19 +9,19 @@ Best used with [aoxpress](https://github.com/ankushKun/aoxpress/blob/main/aoxpre
 
 ```bash
 # Using pnpm
-pnpm add aofetch
+pnpm add ao-fetch
 
 # Using npm
-npm install aofetch
+npm install ao-fetch
 
 # Using yarn
-yarn add aofetch
+yarn add ao-fetch
 ```
 
 ## Quick Start
 
 ```typescript
-import { aofetch } from 'aofetch';
+import { aofetch } from 'ao-fetch';
 
 // Make a GET request
 const response = await aofetch('processId/endpoint');

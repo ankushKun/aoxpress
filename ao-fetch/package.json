@@ -1,5 +1,5 @@
 {
-  "name": "aofetch",
+  "name": "ao-fetch",
   "type": "module",
   "version": "1.0.0",
   "description": "tool to communicate with ao processes in a familiar http like way",
