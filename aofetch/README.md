@@ -63,7 +63,7 @@ interface AoFetchResponse {
 const PID = "3GxCscS3FWn6MQ4RfCxHdIOknPXwX3_99XNUmDvtGYw";
 ```
 
-### GET Data
+### GET Request (readonly dryrun)
 
 ```typescript
 
@@ -72,14 +72,14 @@ const response = await aofetch(`${PID}/name`);
 console.log(response);
 ```
 
-### POST Request
+### POST Request (send message)
 
 ```typescript
 // call root route /name on PID to update the name variable
 const response = await aofetch(`${PID}/name`, {
     method: 'POST',
     body: {
-        name: '<put your name here>',
+        name: 'NEW NAME',
     }
 });
 console.log(response);

@@ -33,7 +33,9 @@ end
 --- Format the current timestamp
 -- @return string Formatted timestamp
 function M.formatTimestamp()
-    return os.date("%Y-%m-%d %H:%M:%S")
+    local ts = os.time()
+    local date = os.date("*t", ts)
+    return string.format("%04d-%02d-%02d %02d:%02d:%02d", date.year, date.month, date.day, date.hour, date.min, date.sec)
 end
 
 --- Format a log message
