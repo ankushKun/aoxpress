@@ -4,7 +4,7 @@ Framework to define handlers and call them from the frontend using a syntax that
 
 ## Overview
 
-The AO Backend Framework consists of two main components:
+This Framework consists of two main components:
 
 1. **aoxpress**: An [APM](https://apm.betteridea.dev) package for defining handlers with syntax similar to expressjs
 2. **ao-fetch**: An [NPM](#) library for communicating with AO processes from JS/TS
