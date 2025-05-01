@@ -1,106 +1,170 @@
-
-
 -- module: "logger"
 local function _loaded_mod_logger()
-local json = require("json")
+  local json = require("json")
 
-local M = {}
+  local M = {}
 
--- Logger configuration
-M.levels = {
+  -- Logger configuration
+  M.levels = {
     error = 0,
     warn = 1,
     info = 2,
     debug = 3
-}
-M.currentLevel = "info"
-M.format = "[%s] %s | %s %s | %s" -- [timestamp] level | method route | message
-M.logs = {}
+  }
+  M.currentLevel = "info"
+  M.format = "[%s] %s | %s %s | %s" -- [timestamp] level | method route | message
+  M.logs = {}
 
--- ANSI color codes for console output
-local colors = {
+  -- ANSI color codes for console output
+  local colors = {
     error = "\27[31m", -- red
     warn = "\27[33m",  -- yellow
     info = "\27[32m",  -- green
     debug = "\27[36m", -- cyan
     reset = "\27[0m"   -- reset
-}
+  }
 
-function M.setLevel(level)
-    assert(M.levels[level], "Invalid log level")
+  --- Set the current log level
+  -- @param level string The log level to set (error, warn, info, debug)
+  function M.setLevel(level)
+    assert(type(level) == "string", "level must be a string")
+    assert(M.levels[level], "invalid log level: " .. tostring(level))
     M.currentLevel = level
-end
+  end
 
-function M.formatTimestamp()
+  --- Format the current timestamp
+  -- @return string Formatted timestamp
+  function M.formatTimestamp()
     return os.date("%Y-%m-%d %H:%M:%S")
-end
+  end
 
-function M.formatMessage(level, route, method, message, status)
+  --- Format a log message
+  -- @param level string The log level
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The log message
+  -- @param status number|nil The HTTP status code
+  -- @return string Formatted log message
+  function M.formatMessage(level, route, method, message, status)
+    assert(type(level) == "string", "level must be a string")
     return string.format(
-        M.format,
-        M.formatTimestamp(),
-        string.upper(level),
-        method or "-",
-        route or "-",
-        message or "-",
-        status or "-"
+      M.format,
+      M.formatTimestamp(),
+      string.upper(level),
+      method or "-",
+      route or "-",
+      message or "-",
+      status or "-"
     )
-end
+  end
 
-function M.printToConsole(level, formattedMessage)
+  --- Print a message to console with color
+  -- @param level string The log level
+  -- @param formattedMessage string The formatted message to print
+  function M.printToConsole(level, formattedMessage)
+    assert(type(level) == "string", "level must be a string")
+    assert(type(formattedMessage) == "string", "formattedMessage must be a string")
     local color = colors[level] or colors.reset
     print(color .. formattedMessage .. colors.reset)
-end
+  end
 
-function M.log(level, route, method, message, status)
+  --- Create a log entry
+  -- @param level string The log level
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The log message
+  -- @param status number|nil The HTTP status code
+  -- @return table The log entry
+  function M.createLogEntry(level, route, method, message, status)
+    return {
+      timestamp = M.formatTimestamp(),
+      level = level,
+      route = route,
+      method = method,
+      message = message,
+      status = status
+    }
+  end
+
+  --- Log a message
+  -- @param level string The log level
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The log message
+  -- @param status number|nil The HTTP status code
+  function M.log(level, route, method, message, status)
     -- Check if level is enabled
     if M.levels[level] > M.levels[M.currentLevel] then
-        return
+      return
     end
 
-    local logEntry = {
-        timestamp = M.formatTimestamp(),
-        level = level,
-        route = route,
-        method = method,
-        message = message,
-        status = status
-    }
+    -- Create and store log entry
+    local logEntry = M.createLogEntry(level, route, method, message, status)
+    table.insert(M.logs, logEntry)
 
     -- Format and print log
     local formattedMessage = M.formatMessage(level, route, method, message, status)
     M.printToConsole(level, formattedMessage)
 
-    -- Store log
-    table.insert(M.logs, logEntry)
-
     -- Send log to process
-    ao.send({
+    local success, encoded = pcall(json.encode, logEntry)
+    if success then
+      ao.send({
         Target = ao.id,
         Action = "Aoxpress-Log",
-        Data = json.encode(logEntry)
-    })
-end
+        Data = encoded
+      })
+    else
+      -- If JSON encoding fails, send a basic log
+      ao.send({
+        Target = ao.id,
+        Action = "Aoxpress-Log",
+        Data = json.encode({
+          timestamp = logEntry.timestamp,
+          level = level,
+          error = "Failed to encode log entry"
+        })
+      })
+    end
+  end
 
--- Convenience methods
-function M.error(route, method, message, status)
+  --- Log an error message
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The error message
+  -- @param status number|nil The HTTP status code
+  function M.error(route, method, message, status)
     M.log("error", route, method, message, status)
-end
+  end
 
-function M.warn(route, method, message, status)
+  --- Log a warning message
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The warning message
+  -- @param status number|nil The HTTP status code
+  function M.warn(route, method, message, status)
     M.log("warn", route, method, message, status)
-end
+  end
 
-function M.info(route, method, message, status)
+  --- Log an info message
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The info message
+  -- @param status number|nil The HTTP status code
+  function M.info(route, method, message, status)
     M.log("info", route, method, message, status)
-end
+  end
 
-function M.debug(route, method, message, status)
+  --- Log a debug message
+  -- @param route string|nil The route path
+  -- @param method string|nil The HTTP method
+  -- @param message string|nil The debug message
+  -- @param status number|nil The HTTP status code
+  function M.debug(route, method, message, status)
     M.log("debug", route, method, message, status)
-end
+  end
 
-return M
-
+  return M
 end
 
 _G.package.loaded["logger"] = _loaded_mod_logger()
@@ -115,11 +179,15 @@ M.endpoints = {}
 -- Import logger
 local logger = require("logger")
 
--- Request object
+-- Type definitions
 local Request = {}
 Request.__index = Request
 
+--- Create a new Request object
+-- @param msg table The message object containing request details
+-- @return table A new Request instance
 function Request:new(msg)
+  assert(type(msg) == "table", "msg must be a table")
   local self = setmetatable({}, Request)
   self.body = {}
   self.headers = {}
@@ -136,7 +204,11 @@ end
 local Response = {}
 Response.__index = Response
 
+--- Create a new Response object
+-- @param msg table The message object containing response details
+-- @return table A new Response instance
 function Response:new(msg)
+  assert(type(msg) == "table", "msg must be a table")
   local self = setmetatable({}, Response)
   self._status = -1 -- default status code
   self.data = ""
@@ -146,14 +218,22 @@ function Response:new(msg)
   return self
 end
 
+--- Set the HTTP status code
+-- @param code number The HTTP status code
+-- @return table The Response instance for chaining
 function Response:status(code)
+  assert(type(code) == "number", "status code must be a number")
+  assert(code >= 100 and code <= 599, "invalid status code")
   self._status = code
-  return self -- return self for chaining
+  return self
 end
 
+--- Send a response
+-- @param data string The response data
+-- @return table The Response instance for chaining
 function Response:send(data)
-  assert(not self.completed, "Already sent response")
-  assert(type(data) == "string", "Response data must be a string")
+  assert(not self.completed, "response already sent")
+  assert(type(data) == "string", "response data must be a string")
   self.data = data
   if self._status == -1 then
     self._status = 200
@@ -169,61 +249,93 @@ function Response:send(data)
   return self
 end
 
+--- Send a JSON response
+-- @param data table The response data to be JSON encoded
+-- @return table The Response instance for chaining
 function Response:json(data)
-  assert(type(data) == "table", "Response data must be a table")
-  self.data = tostring(json.encode(data))
-  return self.send(self.data)
+  assert(type(data) == "table", "response data must be a table")
+  local success, str_data = pcall(json.encode, data)
+  if not success then
+    error("Failed to encode JSON: " .. tostring(str_data))
+  end
+  return self:send(str_data)
 end
 
--- Router methods
+--- Register a GET route handler
+-- @param route string The route path
+-- @param handler function The route handler function
 function M.get(route, handler)
-  assert(type(route) == "string", "Endpoint route must be a string")
-  assert(type(handler) == "function", "Endpoint handler must be a function")
+  assert(type(route) == "string", "route must be a string")
+  assert(type(handler) == "function", "handler must be a function")
   M.endpoints["GET " .. route] = handler
 end
 
+--- Register a POST route handler
+-- @param route string The route path
+-- @param handler function The route handler function
+function M.post(route, handler)
+  assert(type(route) == "string", "route must be a string")
+  assert(type(handler) == "function", "handler must be a function")
+  M.endpoints["POST " .. route] = handler
+end
+
+--- Error boundary wrapper for route handlers
+-- @param handler function The route handler to wrap
+-- @return function The wrapped handler
 local function ErrorBoundary(handler)
   return function(req, res)
     local success, err = pcall(handler, req, res)
     if not success then
       logger.error(req.route, req.method, err, 500)
-      res:status(500):send("Internal Server Error: " .. err)
+      res:status(500):send("Internal Server Error: " .. tostring(err))
     else
       logger.info(req.route, req.method, "OK", res._status)
     end
   end
 end
 
+--- Start listening for requests
 function M.listen()
   -- Set up handlers for each endpoint
   Handlers.add("Aoxpress-Listener", { Action = "Call-Route" }, function(msg)
     local route = msg.Route
-    assert(type(route) == "string", "Endpoint route must be a string")
+    assert(type(route) == "string", "route must be a string")
     local method = msg.Method
-    -- method should be either GET / POST
-    assert(method == "GET" or method == "POST", "Invalid method")
+    assert(method == "GET" or method == "POST", "invalid method")
 
     local req = Request:new(msg)
     local res = Response:new(msg)
-    assert(M.endpoints[method .. " " .. route], "Endpoint not found")
+
     local handler = M.endpoints[method .. " " .. route]
+    if not handler then
+      res:status(404):send("Not Found")
+      return
+    end
+
     ErrorBoundary(handler)(req, res)
   end)
 
   -- Set up log handler
   Handlers.add("Aoxpress-Log", { Action = "Aoxpress-Log" }, function(msg)
-    local logEntry = json.decode(msg.Data or "{}")
-    table.insert(logger.logs, logEntry)
+    assert(msg.From == ao.id, "invalid logging source")
+    local success, logEntry = pcall(json.decode, msg.Data or "{}")
+    if success then
+      table.insert(logger.logs, logEntry)
+    else
+      logger.error(nil, nil, "Failed to parse log entry: " .. tostring(logEntry))
+    end
   end)
 
   logger.info(nil, nil, "Started listening")
 end
 
+--- Stop listening for requests
 function M.unlisten()
   Handlers.remove("Aoxpress-Listener")
+  Handlers.remove("Aoxpress-Log")
 end
 
 -- Expose logger instance
 M.logger = logger
 
-_G.package.loaded["aoxpress"] = M
+return M
