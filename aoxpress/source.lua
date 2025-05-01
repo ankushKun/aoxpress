@@ -19,13 +19,43 @@ function Request:new(msg)
   assert(type(msg) == "table", "msg must be a table")
   local self = setmetatable({}, Request)
   self.body = {}
-  self.headers = {}
   self.query = {}
-  self.params = {}
   self.method = msg.Method
   self.route = msg.Route
   self.hostname = msg.Hostname
   self.msg = msg
+
+  -- Parse body parameters from TagArray
+  if type(msg.TagArray) == "table" then
+    for _, tag in ipairs(msg.TagArray) do
+      local tagName = tag.name
+      local tagValue = tag.value
+
+      if tagName and tagValue and type(tagName) == "string" and tagName:sub(1, 7) == "X-Body-" then
+        local key = tagName:sub(8) -- Remove "X-Body-" prefix
+        -- Try to convert string values to their proper types
+        local value = tagValue
+        -- Try to convert to number if possible
+        local num = tonumber(value)
+        if num then
+          value = num
+          -- Try to convert to boolean if possible
+        elseif value == "true" then
+          value = true
+        elseif value == "false" then
+          value = false
+          -- Try to parse JSON if it looks like a JSON string
+        elseif type(value) == "string" and (value:sub(1, 1) == "{" or value:sub(1, 1) == "[") then
+          local success, parsed = pcall(json.decode, value)
+          if success then
+            value = parsed
+          end
+        end
+        self.body[key] = value
+      end
+    end
+  end
+
   return self
 end
 

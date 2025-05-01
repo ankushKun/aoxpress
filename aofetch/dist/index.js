@@ -7,22 +7,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { connect } from "@permaweb/aoconnect";
+import { connect, createDataItemSigner } from "@permaweb/aoconnect";
 import { z } from "zod";
-/**
- * Schema for AO process tags
- */
-const TagSchema = z.object({
-    name: z.string(),
-    value: z.string()
-});
 /**
  * Schema for aofetch options
  */
 const AoFetchOptionsSchema = z.object({
     method: z.enum(["GET", "POST"]).optional().default("GET"),
     body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
-    params: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({})
+    wallet: z.union([z.literal("web_wallet"), z.custom()]).optional().default("web_wallet")
 });
 /**
  * Schema for aofetch response
@@ -30,8 +23,9 @@ const AoFetchOptionsSchema = z.object({
 const AoFetchResponseSchema = z.object({
     status: z.number().optional().default(-1),
     text: z.string().optional().default(""),
-    json: z.record(z.string(), z.any()).optional().default({}),
+    json: z.union([z.array(z.any()), z.record(z.string(), z.any()).optional().default({})]),
     error: z.string().optional().default(""),
+    id: z.string().optional().default("")
 });
 const ao = connect({ MODE: "legacy" });
 /**
@@ -59,6 +53,61 @@ const safeJsonParse = (data) => {
     }
 };
 /**
+ * Create request tags for AO process
+ * @param endpoint The endpoint route
+ * @param method The HTTP method
+ * @param body Optional request body
+ * @returns Array of tags
+ */
+const createRequestTags = (endpoint, method, body) => {
+    const tags = [
+        { name: "Action", value: "Call-Route" },
+        { name: "Route", value: endpoint },
+        { name: "Method", value: method }
+    ];
+    if (body) {
+        Object.entries(body).forEach(([key, value]) => {
+            tags.push({ name: `X-Body-${key}`, value: value.toString() });
+        });
+    }
+    return tags;
+};
+/**
+ * Process AO message response
+ * @param message The AO message
+ * @returns Processed response
+ */
+const processMessageResponse = (message) => {
+    const tags = tagsToRecord(message.Tags);
+    const response = {};
+    if (message.id) {
+        response.id = message.id;
+    }
+    if (tags.Status) {
+        response.status = parseInt(tags.Status);
+    }
+    if (message.Data) {
+        response.text = message.Data;
+        response.json = safeJsonParse(message.Data);
+    }
+    if (tags.Status !== "200") {
+        response.error = tags.Error || message.Data;
+    }
+    return AoFetchResponseSchema.parse(response);
+};
+/**
+ * Find response message from AO messages
+ * @param messages Array of AO messages
+ * @returns Found message or undefined
+ */
+const findResponseMessage = (messages) => {
+    const msg = messages.find((m) => m.Tags.some((t) => t.name === "Action" && t.value === "Aoxpress-Response"));
+    if (!msg) {
+        throw new Error("No response message received");
+    }
+    return msg;
+};
+/**
  * Fetch data from an AO process
  * @param location Process ID and endpoint route (e.g., "processId/endpoint/route")
  * @param options Fetch options
@@ -77,36 +126,37 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
         throw new Error("Invalid process ID length. Must be 43 characters.");
     }
     try {
+        const requestTags = createRequestTags(endpoint, validatedOptions.method, validatedOptions.body);
         switch (validatedOptions.method) {
             case "GET": {
                 const res = yield ao.dryrun({
                     process: pid,
-                    tags: [
-                        { name: "Action", value: "Call-Route" },
-                        { name: "Route", value: endpoint },
-                        { name: "Method", value: "GET" }
-                    ]
+                    tags: requestTags
                 });
-                const message = res.Messages.find((m) => m.Tags.some((t) => t.name === "Action" && t.value === "Aoxpress-Response"));
-                if (!message) {
-                    throw new Error("No response message received");
-                }
-                const tags = tagsToRecord(message.Tags);
-                const response = {};
-                if (tags.Status) {
-                    response.status = parseInt(tags.Status);
-                }
-                if (message.Data) {
-                    response.text = message.Data;
-                    response.json = safeJsonParse(message.Data);
-                }
-                if (tags.Status !== "200") {
-                    response.error = tags.Error || message.Data;
-                }
-                return AoFetchResponseSchema.parse(response);
+                const message = findResponseMessage(res.Messages);
+                return processMessageResponse(message);
             }
             case "POST": {
-                throw new Error("POST method not implemented yet");
+                const mid = yield ao.message({
+                    process: pid,
+                    tags: requestTags,
+                    signer: validatedOptions.wallet === "web_wallet"
+                        ? createDataItemSigner(window.arweaveWallet)
+                        : createDataItemSigner(validatedOptions.wallet)
+                });
+                if (!mid) {
+                    throw new Error("Failed to send message");
+                }
+                const res = yield ao.result({
+                    process: pid,
+                    message: mid
+                });
+                if (!res) {
+                    throw new Error("Failed to get result");
+                }
+                const message = findResponseMessage(res.Messages);
+                message.id = mid;
+                return processMessageResponse(message);
             }
             default: {
                 throw new Error(`Invalid method: ${validatedOptions.method}`);

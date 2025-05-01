@@ -1,19 +1,25 @@
 import { z } from "zod";
+import { JWKInterface } from "arweave/node/lib/wallet";
+declare global {
+    interface Window {
+        arweaveWallet: JWKInterface;
+    }
+}
 /**
  * Schema for aofetch options
  */
 declare const AoFetchOptionsSchema: z.ZodObject<{
     method: z.ZodDefault<z.ZodOptional<z.ZodEnum<["GET", "POST"]>>>;
     body: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodNumber, z.ZodBoolean]>>>>;
-    params: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodNumber, z.ZodBoolean]>>>>;
+    wallet: z.ZodDefault<z.ZodOptional<z.ZodUnion<[z.ZodLiteral<"web_wallet">, z.ZodType<JWKInterface, z.ZodTypeDef, JWKInterface>]>>>;
 }, "strip", z.ZodTypeAny, {
-    params?: Record<string, string | number | boolean>;
     method?: "GET" | "POST";
     body?: Record<string, string | number | boolean>;
+    wallet?: JWKInterface | "web_wallet";
 }, {
-    params?: Record<string, string | number | boolean>;
     method?: "GET" | "POST";
     body?: Record<string, string | number | boolean>;
+    wallet?: JWKInterface | "web_wallet";
 }>;
 /**
  * Schema for aofetch response
@@ -21,18 +27,21 @@ declare const AoFetchOptionsSchema: z.ZodObject<{
 declare const AoFetchResponseSchema: z.ZodObject<{
     status: z.ZodDefault<z.ZodOptional<z.ZodNumber>>;
     text: z.ZodDefault<z.ZodOptional<z.ZodString>>;
-    json: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>;
+    json: z.ZodUnion<[z.ZodArray<z.ZodAny, "many">, z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodAny>>>]>;
     error: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    id: z.ZodDefault<z.ZodOptional<z.ZodString>>;
 }, "strip", z.ZodTypeAny, {
     status?: number;
     text?: string;
-    json?: Record<string, any>;
+    json?: any[] | Record<string, any>;
     error?: string;
+    id?: string;
 }, {
     status?: number;
     text?: string;
-    json?: Record<string, any>;
+    json?: any[] | Record<string, any>;
     error?: string;
+    id?: string;
 }>;
 type AoFetchOptions = z.infer<typeof AoFetchOptionsSchema>;
 type AoFetchResponse = z.infer<typeof AoFetchResponseSchema>;
