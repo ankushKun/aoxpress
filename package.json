@@ -1,6 +1,0 @@
-{
-    "scripts": {
-        "publish:apm": "cd aoxpress && apm publish",
-        "publish:npm": "cd ao-fetch && npm run publish"
-    }
-}

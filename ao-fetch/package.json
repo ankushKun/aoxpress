@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "publish": "pnpm i && pnpm run build && npm publish --provenance --access public"
+    "publish": "pnpm run build && npm publish --provenance --access public"
   },
   "keywords": [],
   "author": "",
