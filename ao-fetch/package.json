@@ -2,6 +2,10 @@
   "name": "ao-fetch",
   "type": "module",
   "version": "1.0.0",
+  "repository": {
+    "url": "https://github.com/ankushKun/aoxpress",
+    "type": "git"
+  },
   "description": "tool to communicate with ao processes in a familiar http like way",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
