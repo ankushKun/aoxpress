@@ -1,4 +1,4 @@
-# Aoxpress
+# aoxpress
 
 A Lua-based web framework for AO processes, inspired by Express.js. Aoxpress provides a simple and intuitive way to handle HTTP-like requests in AO processes.
 
