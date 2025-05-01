@@ -6,9 +6,9 @@ This directory contains example applications demonstrating the usage of the AO B
 
 0. Get a wallet initialised for usage through node\
    `npx -y @permaweb/wallet > wallet.json`
-1. Install [aoxpress](../aoxpress/) on AO process
-2. Run [backend.lua](./backend.lua) on the AO process
-3. Paste the process id in [index.js](./index.js)
+1. Install [aoxpress](https://github.com/ankushKun/aoxpress/blob/main/aoxpress/README.md) on AO process
+2. Run [backend.lua](https://github.com/ankushKun/aoxpress/blob/main/demo/backend.lua) on the AO process
+3. Paste the process id in [index.js](https://github.com/ankushKun/aoxpress/blob/main/demo/index.js)
 4. Run `node index.js`
 
 This will:

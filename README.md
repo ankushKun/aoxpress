@@ -11,9 +11,9 @@ The AO Backend Framework consists of two main components:
 
 ## Documentation
 
-- [aoxpress Documentation](./aoxpress/README.md)
-- [aofetch Documentation](./aofetch/README.md)
-- [Demo Usage](./demo/README.md)
+- [aoxpress](https://github.com/ankushKun/aoxpress/blob/main/aoxpress/README.md)
+- [aofetch](https://github.com/ankushKun/aoxpress/blob/main/aofetch/README.md)
+- [Demo Usage](https://github.com/ankushKun/aoxpress/tree/main/demo)
 
 ## License
 

@@ -2,6 +2,8 @@
 
 A Lua-based web framework for AO processes, inspired by Express.js. Aoxpress provides a simple and intuitive way to handle HTTP-like requests in AO processes.
 
+Best used with [aofetch](../aofetch/README.md)
+
 ## Installation
 
 Use [APM](https://apm.betteridea.dev) to install aoxpress in your process
@@ -18,15 +20,15 @@ app = require("aoxpress")
 
 -- Create a new route
 app.get("/hello", function(req, res)
-    res:json({ message = "Hello, World!" })
+    res:json({ message = "Hello, World!" }) -- default status is 200
     -- or
     res:status(401):send("User Unauthorised")
     -- or
-    res:send("Helloooo") -- default status is 200
+    res:send("Helloooo")
 end)
 
 -- Start listening for requests
-aoxpress.listen()
+app.listen()
 ```
 
 ## API Reference
@@ -70,7 +72,7 @@ end)
 
 ## Examples
 
-See the [demo](./../demo) directory for basic usage.
+See the [demo](../demo/README.md) directory for basic usage.
 
 ## License
 

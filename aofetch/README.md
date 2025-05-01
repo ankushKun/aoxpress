@@ -2,7 +2,7 @@
 
 A client library for communicating with AO processes. Aofetch provides a familiar HTTP-like interface for making requests to AO processes, similar to the `fetch` API.
 
-Best used with [aoxpress](../aoxpress/README.md)
+Best used with [aoxpress](https://github.com/ankushKun/aoxpress/blob/main/aoxpress/README.md)
 
 
 ## Installation

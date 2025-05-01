@@ -2,7 +2,7 @@
 
 A Lua-based web framework for AO processes, inspired by Express.js. Aoxpress provides a simple and intuitive way to handle HTTP-like requests in AO processes.
 
-Best used with [aofetch](../aofetch/README.md)
+Best used with [aofetch](https://github.com/ankushKun/aoxpress/blob/main/aofetch/README.md)
 
 ## Installation
 
@@ -72,7 +72,7 @@ end)
 
 ## Examples
 
-See the [demo](../demo/README.md) directory for basic usage.
+See the [demo](https://github.com/ankushKun/aoxpress/tree/main/demo) directory for basic usage.
 
 ## License
 
