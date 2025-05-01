@@ -2,98 +2,23 @@
 
 This directory contains example applications demonstrating the usage of the AO Backend Framework.
 
-## Examples
+## Running the Example
 
-### Basic Server
+0. Get a wallet initialised for usage through node\
+   `npx -y @permaweb/wallet > wallet.json`
+1. Install [aoxpress](../aoxpress/) on AO process
+2. Run [backend.lua](./backend.lua) on the AO process
+3. Paste the process id in [index.js](./index.js)
+4. Run `node index.js`
 
-A simple server that demonstrates basic route handling and response types.
+This will:
 
-```lua
--- server.lua
-local aoxpress = require("aoxpress")
+1. Fetch the variable name from /name endpoint with a GET request
+2. Modify the variable name from /name endpoint with a POST request
+3. Fetch the updated value of name 
 
--- GET route with JSON response
-aoxpress.get("/hello", function(req, res)
-    res:json({ message = "Hello, World!" })
-end)
-
--- GET route with text response
-aoxpress.get("/text", function(req, res)
-    res:send("Plain text response")
-end)
-
--- Error handling example
-aoxpress.get("/error", function(req, res)
-    error("This is a test error")
-end)
-
--- Start the server
-aoxpress.listen()
-```
-
-### Client Example
-
-A TypeScript client that demonstrates how to use aofetch to communicate with the server.
-
-```typescript
-// client.ts
-import { aofetch } from 'aofetch';
-
-async function main() {
-    try {
-        // Get JSON response
-        const jsonResponse = await aofetch('processId/hello');
-        console.log('JSON Response:', jsonResponse.json);
-
-        // Get text response
-        const textResponse = await aofetch('processId/text');
-        console.log('Text Response:', textResponse.text);
-
-        // Handle error
-        const errorResponse = await aofetch('processId/error');
-        if (errorResponse.error) {
-            console.error('Error:', errorResponse.error);
-        }
-    } catch (error) {
-        console.error('Request failed:', error);
-    }
-}
-
-main();
-```
-
-## Running the Examples
-
-1. Deploy the server code to an AO process
-2. Update the process ID in the client code
-3. Run the client code
-
-```bash
-# Install dependencies
-pnpm install
-
-# Run the client
-pnpm start
-```
-
-## Features Demonstrated
-
-- Basic route handling
-- JSON responses
-- Text responses
-- Error handling
-- Client-server communication
-- Type safety
-- Logging
-
-## Best Practices
-
-1. Always handle errors appropriately
-2. Use type-safe responses
-3. Implement proper logging
-4. Validate input data
-5. Use appropriate HTTP status codes
+We have used a wallet JWK in this example, for running this in the client side, change the `wallet` argument in aofetch options to `"web_wallet"` or just remove it entirely since web_wallet is used by default
 
 ## License
 
-MIT 
+MIT
