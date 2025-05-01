@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "publish": "npm run build && npm publish --provenance --access public"
+    "publish": "npm ci && npm run build && npm publish --provenance --access public"
   },
   "keywords": [],
   "author": "",
