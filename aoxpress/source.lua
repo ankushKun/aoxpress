@@ -197,4 +197,6 @@ end
 -- Expose logger instance
 M.logger = logger
 
-_G.package.loaded["aoxpress"] = M
+-- _G.package.loaded["aoxpress"] = M
+
+return M
