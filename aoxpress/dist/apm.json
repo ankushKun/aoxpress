@@ -2,7 +2,7 @@
     "$schema": "https://raw.githubusercontent.com/ankushKun/apm-cli/main/apm.schema.json",
     "name": "aoxpress",
     "vendor": "@apm",
-    "description": "expressjs like convention for communication between ao processes and the frontend",
+    "description": "expressjs like convention for frontend-process communication",
     "main": "source.lua",
     "version": "1.0.0",
     "repository": "https://github.com/ankushKun/aoxpress",

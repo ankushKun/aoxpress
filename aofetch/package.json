@@ -1,12 +1,23 @@
 {
   "name": "aofetch",
+  "type": "module",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "tool to communicate with ao processes in a familiar http like way",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "MIT",
+  "dependencies": {
+    "@permaweb/aoconnect": "^0.0.82",
+    "arweave": "^1.15.7",
+    "typescript": "^5.8.3",
+    "zod": "^3.24.3"
+  }
 }

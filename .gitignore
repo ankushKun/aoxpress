@@ -1,0 +1,4 @@
+.DS_Store
+wallet.json
+.env
+node_modules
