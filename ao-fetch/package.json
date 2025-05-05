@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.1",
   "repository": {
-    "url": "https://github.com/ankushKun/aoxpress",
+    "url": "git+https://github.com/ankushKun/aoxpress.git",
     "type": "git"
   },
   "description": "tool to communicate with ao processes in a familiar http like way",
@@ -13,9 +13,9 @@
     "/dist"
   ],
   "scripts": {
-    "build": "tsc && npm run build:browser",
+    "build": "tsc && npm run build:browser && npm run build:esm",
     "build:browser": "esbuild src/index.ts --bundle --format=iife --global-name=aofetch --outfile=dist/browser.js",
-    "publish": "pnpm run build && npm publish --provenance --access public"
+    "build:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/browser.mjs"
   },
   "keywords": [],
   "author": "",
