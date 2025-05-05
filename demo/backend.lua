@@ -1,3 +1,6 @@
+-- just visit https://arweave.net/process-id/path
+-- URL works only if you have created the project/process through ide.betteridea.dev
+
 app = require("aoxpress")
 
 name = "Ankush"

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
     <script type="module">
-        import { aofetch } from "https://unpkg.com/ao-fetch@1.0.2/dist/browser.mjs";
+        import { aofetch } from "https://unpkg.com/ao-fetch@latest/dist/browser.mjs";
 
         const process = window.location.pathname.split("/")[1];
         const path = "/" + window.location.pathname.split("/").splice(2).join("/");
@@ -17,17 +17,47 @@
 
         try {
             const res = await aofetch(process + path);
-            console.log(res);
+            if (res && res.status == 200) {
+                console.log(res);
+                try {
+                    const body = document.querySelector("body");
+                    let json;
+                    try {
+                        json = JSON.parse(res.text);
+                        // Add meta tags if not present
+                        const head = document.querySelector('head');
+                        if (!document.querySelector('meta[name="color-scheme"]')) {
+                            const metaColor = document.createElement('meta');
+                            metaColor.setAttribute('name', 'color-scheme');
+                            metaColor.setAttribute('content', 'light dark');
+                            head.appendChild(metaColor);
+                        }
+                        if (!document.querySelector('meta[charset]')) {
+                            const metaCharset = document.createElement('meta');
+                            metaCharset.setAttribute('charset', 'utf-8');
+                            head.appendChild(metaCharset);
+                        }
+                        // Render JSON and add formatter container
+                        body.innerHTML = `<pre>${JSON.stringify(json, null, 2)}</pre><div class="json-formatter-container"></div>`;
+                    } catch (e) {
+                        body.innerHTML = res.text;
+                    }
+                } catch (e) {
+                    console.error("aofetch error:", e);
+                    const body = document.querySelector("body");
+                    body.innerHTML = "<h1>error</h1>";
+                }
+            } else {
+                console.error(res)
+            }
         } catch (e) {
             console.error("aofetch error:", e);
+            const body = document.querySelector("body");
+            body.innerHTML = "<h1>error</h1>";
         }
     </script>
 </head>
 
-
-<body>
-
-</body>
-
+<body></body>
 
 </html>
