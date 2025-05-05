@@ -24,5 +24,8 @@ MIT
 
 ## Roadmap
 
-- [ ] Implement middleware system
-- [ ] Add authentication helpers
+- [ ] Middleware system
+- [ ] Auth information
+- [ ] Dynamic routing
+- [ ] React like syntax for returning HTML pages
+- [ ] Ability to do post requests from the response HTML
