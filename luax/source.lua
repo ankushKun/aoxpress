@@ -4,12 +4,26 @@ local luax = {}
 -- Safe element creation with error handling
 local function safeCreateElement(name, attrs, children)
   local success, result = pcall(function()
-    return {
-      type = "html",
-      name = name,
-      atts = attrs or {},
-      children = children or {}
-    }
+    -- Convert children to array if it's a single value
+    if children and type(children) ~= "table" then
+      children = { children }
+    end
+
+    -- Handle text nodes directly
+    if type(name) == "string" and name:match("^[a-zA-Z]") then
+      return {
+        type = "html",
+        name = name,
+        atts = attrs or {},
+        children = children or {}
+      }
+    else
+      -- If name is not a string or doesn't start with a letter, treat as text
+      return {
+        type = "text",
+        text = tostring(name or "")
+      }
+    end
   end)
 
   if not success then
@@ -18,27 +32,14 @@ local function safeCreateElement(name, attrs, children)
   return result
 end
 
--- Create HTML elements
+-- Create HTML elements with JSX-like syntax
 function luax.element(name, attrs, children)
-  if type(name) ~= "string" then
-    error("Element name must be a string, got " .. type(name))
+  if type(name) == "function" then
+    -- Handle component rendering
+    return name(attrs, children)
   end
+
   return safeCreateElement(name, attrs, children)
-end
-
--- Create text nodes with error handling
-function luax.text(text)
-  local success, result = pcall(function()
-    return {
-      type = "text",
-      text = tostring(text or "")
-    }
-  end)
-
-  if not success then
-    error("Failed to create text node: " .. tostring(result))
-  end
-  return result
 end
 
 -- Create a component with error handling
@@ -65,30 +66,6 @@ function luax.component(render)
   end
 end
 
--- Helper function to create elements with a more JSX-like syntax
-function luax.create(name)
-  if type(name) ~= "string" then
-    error("Element name must be a string, got " .. type(name))
-  end
-
-  return function(attrs, children)
-    local success, result = pcall(function()
-      if type(attrs) == "table" and not attrs.type then
-        -- If first argument is a table and not already an element, it's attributes
-        return luax.element(name, attrs, children)
-      else
-        -- If first argument is not a table or is an element, it's children
-        return luax.element(name, {}, { attrs })
-      end
-    end)
-
-    if not success then
-      error("Failed to create element '" .. name .. "': " .. tostring(result))
-    end
-    return result
-  end
-end
-
 -- Function to render HTML elements to string with error handling
 function luax.render(element)
   local success, result = pcall(function()
@@ -108,7 +85,16 @@ function luax.render(element)
     if element.atts then
       for k, v in pairs(element.atts) do
         if v ~= nil then
-          attrs = attrs .. string.format(' %s="%s"', k, tostring(v))
+          -- Handle boolean attributes
+          if type(v) == "boolean" then
+            if v then
+              attrs = attrs .. string.format(' %s', k)
+            end
+          else
+            -- Convert htmlFor to for in output
+            local attrName = k == "htmlFor" and "for" or k
+            attrs = attrs .. string.format(' %s="%s"', attrName, tostring(v))
+          end
         end
       end
     end
@@ -144,11 +130,24 @@ local elements = {
 
 local reserved_names = { "table", "select" }
 
+-- Create element constructor with table syntax
+local function createElementConstructor(name)
+  return function(attrs)
+    return function(children)
+      if type(attrs) == "table" and not attrs.type then
+        return luax.element(name, attrs, children)
+      else
+        return luax.element(name, {}, { attrs })
+      end
+    end
+  end
+end
+
 function luax.init()
   luax.elements = {}
   -- Create elements with error handling
   for _, name in ipairs(elements) do
-    luax.elements[name] = luax.create(name)
+    luax.elements[name] = createElementConstructor(name)
 
     if not _G[name] then
       _G[name] = luax.elements[name]
