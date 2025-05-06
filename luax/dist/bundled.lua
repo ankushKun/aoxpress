@@ -135,40 +135,39 @@ function luax.render(element)
   return result
 end
 
-local elements = {
-  "div", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6",
-  "a", "img", "input", "button", "form", "label", "select",
-  "option", "textarea", "ul", "ol", "li", "table", "tr",
-  "td", "th", "thead", "tbody", "header", "footer", "nav",
-  "main", "section", "strong", "em",
-  "br", "hr", "meta", "link", "script", "style"
-}
+function luax.init()
+  local elements = {
+    "div", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6",
+    "a", "img", "input", "button", "form", "label", "select",
+    "option", "textarea", "ul", "ol", "li", "table", "tr",
+    "td", "th", "thead", "tbody", "header", "footer", "nav",
+    "main", "section", "strong", "em",
+    "br", "hr", "meta", "link", "script", "style"
+  }
 
-local reserved_names = {
-  "table", "select"
-}
+  local reserved_names = { "table", "select" }
 
--- Create elements with error handling
-for _, name in ipairs(elements) do
-  local success, result = pcall(function()
-    elements[name] = luax.create(name)
-    if not _G[name] then
-      _G[name] = elements[name]
-    else
-      if reserved_names[name] then
-        _G["html_" .. name] = elements[name]
-      else
+  -- Create elements with error handling
+  for _, name in ipairs(elements) do
+    local success, result = pcall(function()
+      elements[name] = luax.create(name)
+      if not _G[name] then
         _G[name] = elements[name]
+      else
+        if reserved_names[name] then
+          _G["html_" .. name] = elements[name]
+        else
+          _G[name] = elements[name]
+        end
       end
+    end)
+
+    if not success then
+      error("Failed to create element '" .. name .. "': " .. tostring(result))
     end
-  end)
-
-  if not success then
-    error("Failed to create element '" .. name .. "': " .. tostring(result))
   end
-end
 
--- when importing luax, set e = luax.elements for shorthand usage
-luax.elements = elements
+  luax.elements = elements
+end
 
 return luax
