@@ -4,7 +4,7 @@
     "vendor": "@apm",
     "description": "expressjs like convention for communication between ao processes and the frontend",
     "main": "source.lua",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "repository": "https://github.com/ankushKun/aoxpress",
     "license": "MIT",
     "keywords": [
