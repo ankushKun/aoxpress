@@ -4,7 +4,7 @@
     "vendor": "@apm",
     "description": "expressjs like convention for communication between ao processes and the frontend",
     "main": "source.lua",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "repository": "https://github.com/ankushKun/aoxpress",
     "license": "MIT",
     "keywords": [
@@ -25,6 +25,10 @@
         "modifiesGlobalState": false,
         "installMessage": ""
     },
-    "dependencies": {},
+    "dependencies": {
+        "luax": {
+            "version": "1.0.1"
+        }
+    },
     "wallet": "/Users/weeblet/Library/Mobile Documents/com~apple~CloudDocs/WALLETS/8iD-Gy_sKx98oth27JhjjP2V_xUSIGqs_8-skb63YHg.json"
 }
