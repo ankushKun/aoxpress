@@ -31,6 +31,25 @@ end)
 app.listen()
 ```
 
+## Using with LuaX for HTML Responses
+
+Aoxpress works great with [LuaX](../luax/README.md) for generating HTML responses programmatically:
+
+```lua
+local app = require("aoxpress")
+local luax = require("luax")
+
+app.get("/html", function(req, res)
+    local page = div { class = "centered" } {
+        h1 {} { "Welcome to LuaX + aoxpress!" },
+        p {} { "This page was rendered using LuaX syntax." }
+    }
+    res:send(luax.render(page))
+end)
+
+app.listen()
+```
+
 ## API Reference
 
 ### Request Object
