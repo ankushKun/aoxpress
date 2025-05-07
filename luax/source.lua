@@ -1,5 +1,6 @@
 -- LuaX Module
 local luax = {}
+luax.elements = {}
 
 -- Safe element creation with error handling
 local function safeCreateElement(name, attrs, children)
@@ -169,12 +170,12 @@ end
 function luax.init()
   local elements = {
     "div", "span", "p", "h1", "h2", "h3", "h4", "h5", "h6",
-    "a", "img", "input", "button", "form", "label", "select",
+    "a", "img", "input", "button", "form", "label",
     "option", "textarea", "ul", "ol", "li", "tr",
     "td", "th", "thead", "tbody", "header", "footer", "nav",
     "main", "section", "strong", "em",
     "br", "hr", "meta", "link", "script", "style",
-    "iframe", "article", "time", "aside", "dialog", "summary", "details"
+    "iframe", "summary", "details", "article", "time", "aside", "dialog"
   }
 
   local reserved_names = { "table", "select" }
@@ -183,10 +184,11 @@ function luax.init()
   for _, name in ipairs(elements) do
     local success, result = pcall(function()
       local element_func = luax.create(name)
-      if reserved_names[name] then
-        _G["html_" .. name] = element_func
-      else
+      luax.elements[name] = element_func
+      if not _G[name] then
         _G[name] = element_func
+      else
+        -- print(name .. " already exists in global scope")
       end
     end)
 
@@ -199,7 +201,12 @@ function luax.init()
   for _, name in ipairs(reserved_names) do
     local success, result = pcall(function()
       local element_func = luax.create(name)
-      _G["html_" .. name] = element_func
+      luax.elements["html_" .. name] = element_func
+      if not _G["html_" .. name] then
+        _G["html_" .. name] = element_func
+      else
+        -- print("html_" .. name .. " already exists in global scope")
+      end
     end)
 
     if not success then
@@ -207,7 +214,7 @@ function luax.init()
     end
   end
 
-  luax.elements = elements
+  -- luax.elements = elements
 end
 
 luax.init()
