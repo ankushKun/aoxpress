@@ -16,21 +16,118 @@ apm.install("luax")
 ```lua
 local luax = require("luax")
 
--- Create a simple div with text
-local page = div({class = "text-xl text-center"}, {
-    h1({}, { text("Welcome to LuaX") })
-})
+-- Simple div with text
+local page = div {} { h1 {} { "Welcome to LuaX" } }
 
 -- Render to HTML string
 print(luax.render(page))
 
--- output
--- <div class="text-xl text-center">
---      <h1>Welcome to LuaX</h1>
+-- Output:
+-- <div><h1>Welcome to LuaX</h1></div>
+```
+
+## Element Syntax
+
+- All elements are called as functions twice:
+  - First call: attributes table (use `{}` if no attributes)
+  - Second call: children table (use `{}` if no children)
+- Text nodes can be plain strings in the children table
+- You can nest elements naturally
+
+### Examples
+
+#### Simple Elements
+```lua
+local hello = h1 {} { "Hello World!" }
+local para = p {} { "This is a paragraph." }
+
+-- Equivalent HTML:
+-- <h1>Hello World!</h1>
+-- <p>This is a paragraph.</p>
+```
+
+#### With Attributes
+```lua
+local btn = button { class = "btn-primary", type = "button" } { "Click Me" }
+local imgEl = img { src = "logo.png", alt = "Logo" } {}
+
+-- Equivalent HTML:
+-- <button class="btn-primary" type="button">Click Me</button>
+-- <img src="logo.png" alt="Logo"/>
+```
+
+#### Nested Elements
+```lua
+local card = div { class = "card" } {
+    h2 {} { "Card Title" },
+    p {} { "Card content goes here." }
+}
+
+-- Equivalent HTML:
+-- <div class="card">
+--   <h2>Card Title</h2>
+--   <p>Card content goes here.</p>
 -- </div>
 ```
 
-### Built-in Elements
+#### Lists
+```lua
+local myList = ul { class = "list-disc" } {
+    li {} { "Item 1" },
+    li {} { "Item 2" },
+    li {} { "Item 3" }
+}
+
+-- Equivalent HTML:
+-- <ul class="list-disc">
+--   <li>Item 1</li>
+--   <li>Item 2</li>
+--   <li>Item 3</li>
+-- </ul>
+```
+
+#### Table
+```lua
+local myTable = html_table { class = "table" } {
+    tr {} {
+        th {} { "Header 1" },
+        th {} { "Header 2" }
+    },
+    tr {} {
+        td {} { "Cell 1" },
+        td {} { "Cell 2" }
+    }
+}
+
+-- Equivalent HTML:
+-- <table class="table">
+--   <tr>
+--     <th>Header 1</th>
+--     <th>Header 2</th>
+--   </tr>
+--   <tr>
+--     <td>Cell 1</td>
+--     <td>Cell 2</td>
+--   </tr>
+-- </table>
+```
+
+#### Components
+```lua
+local Button = luax.component(function(props, children)
+    return button {
+        class = "btn " .. (props.class or ""),
+        type = props.type or "button"
+    } (children)
+end)
+
+local myButton = Button { class = "primary", type = "submit" } { "Submit" }
+
+-- Equivalent HTML:
+-- <button class="btn primary" type="submit">Submit</button>
+```
+
+## Built-in Elements
 
 LuaX provides built-in helpers for common HTML elements:
 - `div`, `span`, `p`
@@ -38,58 +135,18 @@ LuaX provides built-in helpers for common HTML elements:
 - `a`, `img`, `input`, `button`
 - `form`, `label`, `html_select`, `option`
 - `textarea`, `ul`, `ol`, `li`
-- `html_table`, `tr`, `td`, `th`
+- `html_table`, `tr`, `td`, `th`, `thead`, `tbody`
 - `header`, `footer`, `nav`, `main`, `section`
 - `strong`, `em`
 - `br`, `hr`, `meta`, `link`, `script`, `style`
+- `iframe`, `summary`, `details`, `article`, `time`, `aside`, `dialog`
 
-## Examples
-
-### Creating Elements
-
-```lua
--- Basic element with attributes
-local button = button({
-    class = "btn",
-    type = "submit"
-}, {
-    luax.text("Click me")
-})
-
--- Nested elements
-local card = div({
-    class = "card"
-}, {
-    h2({}, { text("Card Title") }),
-    p({}, { text("Card content") })
-})
-```
-
-### Creating Components
-
-```lua
-local Button = luax.component(function(props, children)
-    return button({
-        class = "btn " .. (props.class or ""),
-        type = props.type or "button"
-    }, children)
-end)
-
--- Using the component
-local myButton = Button({
-    class = "primary",
-    type = "submit"
-}, {
-    text("Submit")
-})
-```
+> Reserved names like `table` and `select` are available as `html_table` and `html_select`.
 
 ## Notes
 
 - Element names are automatically added to the global scope
-- If an element name conflicts with an existing global, it's prefixed with "html_"
-- All element creation functions include error handling
-- The library is designed to be lightweight and performant
+- If an element name conflicts with an existing global, it's prefixed with `html_`
 
 ## API Reference
 
@@ -102,7 +159,7 @@ Creates an HTML element.
 - `children`: Table - Child elements
 
 #### `luax.text(text)`
-Creates a text node.
+Creates a text node (usually not needed, as strings are auto-converted).
 - `text`: String - The text content
 
 #### `luax.component(render)`
