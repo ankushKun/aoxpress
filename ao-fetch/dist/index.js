@@ -15,7 +15,8 @@ import { z } from "zod";
 const AoFetchOptionsSchema = z.object({
     method: z.enum(["GET", "POST"]).optional().default("GET"),
     body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
-    wallet: z.union([z.literal("web_wallet"), z.custom()]).optional().default("web_wallet")
+    wallet: z.union([z.literal("web_wallet"), z.custom()]).optional().default("web_wallet"),
+    CU_URL: z.string().optional().default("https://cu.ardrive.io")
 });
 /**
  * Schema for aofetch response
