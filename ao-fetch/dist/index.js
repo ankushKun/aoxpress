@@ -28,7 +28,7 @@ const AoFetchResponseSchema = z.object({
     error: z.string().optional().default(""),
     id: z.string().optional().default("")
 });
-const ao = connect({ MODE: "legacy" });
+let ao = connect({ MODE: "legacy" });
 /**
  * Convert an array of tags to a record
  * @param tags Array of tags
@@ -122,6 +122,8 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
     const locationParts = location.split("/");
     const pid = locationParts[0];
     const endpoint = "/" + locationParts.slice(1).join("/");
+    const CU_URL = validatedOptions.CU_URL;
+    ao = connect({ MODE: "legacy", CU_URL });
     // Validate process ID
     if (pid.length !== 43) {
         throw new Error("Invalid process ID length. Must be 43 characters.");

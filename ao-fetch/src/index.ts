@@ -47,7 +47,7 @@ interface AoDryrunResult {
     Messages: AoMessage[];
 }
 
-const ao = connect({ MODE: "legacy" });
+let ao = connect({ MODE: "legacy" });
 
 /**
  * Convert an array of tags to a record
@@ -164,6 +164,8 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
     const locationParts = location.split("/");
     const pid = locationParts[0];
     const endpoint = "/" + locationParts.slice(1).join("/");
+    const CU_URL = validatedOptions.CU_URL;
+    ao = connect({ MODE: "legacy", CU_URL });
 
     // Validate process ID
     if (pid.length !== 43) {
