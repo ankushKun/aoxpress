@@ -1,4 +1,4 @@
-import { connect, createDataItemSigner } from "@permaweb/aoconnect";
+// import { connect, createDataItemSigner } from "@permaweb/aoconnect";
 import { z } from "zod";
 import { JWKInterface } from "arweave/node/lib/wallet";
 
@@ -47,8 +47,6 @@ interface AoResult {
 interface AoDryrunResult {
     Messages: AoMessage[];
 }
-
-let ao = connect({ MODE: "legacy" });
 
 /**
  * Convert an array of tags to a record
@@ -166,7 +164,7 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
     const pid = locationParts[0];
     const endpoint = "/" + locationParts.slice(1).join("/");
     const CU_URL = validatedOptions.CU_URL;
-    const ao = validatedOptions.AO || connect({ MODE: "legacy", CU_URL });
+    const ao = validatedOptions.AO ? validatedOptions.AO : (await import("@permaweb/aoconnect")).connect({ MODE: "legacy", CU_URL });
 
     // Validate process ID
     if (pid.length !== 43) {
@@ -192,8 +190,8 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
                     process: pid,
                     tags: requestTags,
                     signer: validatedOptions.wallet === "web_wallet"
-                        ? createDataItemSigner(window.arweaveWallet)
-                        : createDataItemSigner(validatedOptions.wallet)
+                        ? (await import("@permaweb/aoconnect")).createDataItemSigner(window.arweaveWallet)
+                        : (await import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet)
                 });
 
                 if (!mid) {
