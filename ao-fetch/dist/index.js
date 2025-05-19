@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import { connect, createDataItemSigner } from "@permaweb/aoconnect";
+// import { connect, createDataItemSigner } from "@permaweb/aoconnect";
 import { z } from "zod";
 /**
  * Schema for aofetch options
@@ -16,7 +16,8 @@ const AoFetchOptionsSchema = z.object({
     method: z.enum(["GET", "POST"]).optional().default("GET"),
     body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
     wallet: z.union([z.literal("web_wallet"), z.custom()]).optional().default("web_wallet"),
-    CU_URL: z.string().optional().default("https://cu.ardrive.io")
+    CU_URL: z.string().optional().default("https://cu.ardrive.io"),
+    AO: z.any().optional()
 });
 /**
  * Schema for aofetch response
@@ -28,7 +29,6 @@ const AoFetchResponseSchema = z.object({
     error: z.string().optional().default(""),
     id: z.string().optional().default("")
 });
-let ao = connect({ MODE: "legacy" });
 /**
  * Convert an array of tags to a record
  * @param tags Array of tags
@@ -123,7 +123,7 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
     const pid = locationParts[0];
     const endpoint = "/" + locationParts.slice(1).join("/");
     const CU_URL = validatedOptions.CU_URL;
-    ao = connect({ MODE: "legacy", CU_URL });
+    const ao = validatedOptions.AO ? validatedOptions.AO : (yield import("@permaweb/aoconnect")).connect({ MODE: "legacy", CU_URL });
     // Validate process ID
     if (pid.length !== 43) {
         throw new Error("Invalid process ID length. Must be 43 characters.");
@@ -144,8 +144,8 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
                     process: pid,
                     tags: requestTags,
                     signer: validatedOptions.wallet === "web_wallet"
-                        ? createDataItemSigner(window.arweaveWallet)
-                        : createDataItemSigner(validatedOptions.wallet)
+                        ? (yield import("@permaweb/aoconnect")).createDataItemSigner(window.arweaveWallet)
+                        : (yield import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet)
                 });
                 if (!mid) {
                     throw new Error("Failed to send message");

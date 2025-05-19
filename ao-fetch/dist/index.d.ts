@@ -13,16 +13,19 @@ declare const AoFetchOptionsSchema: z.ZodObject<{
     body: z.ZodDefault<z.ZodOptional<z.ZodRecord<z.ZodString, z.ZodUnion<[z.ZodString, z.ZodNumber, z.ZodBoolean]>>>>;
     wallet: z.ZodDefault<z.ZodOptional<z.ZodUnion<[z.ZodLiteral<"web_wallet">, z.ZodType<JWKInterface, z.ZodTypeDef, JWKInterface>]>>>;
     CU_URL: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+    AO: z.ZodOptional<z.ZodAny>;
 }, "strip", z.ZodTypeAny, {
     method?: "GET" | "POST";
     body?: Record<string, string | number | boolean>;
     wallet?: JWKInterface | "web_wallet";
     CU_URL?: string;
+    AO?: any;
 }, {
     method?: "GET" | "POST";
     body?: Record<string, string | number | boolean>;
     wallet?: JWKInterface | "web_wallet";
     CU_URL?: string;
+    AO?: any;
 }>;
 /**
  * Schema for aofetch response
