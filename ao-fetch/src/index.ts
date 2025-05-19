@@ -15,7 +15,8 @@ const AoFetchOptionsSchema = z.object({
     method: z.enum(["GET", "POST"]).optional().default("GET"),
     body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
     wallet: z.union([z.literal("web_wallet"), z.custom<JWKInterface>()]).optional().default("web_wallet"),
-    CU_URL: z.string().optional().default("https://cu.ardrive.io")
+    CU_URL: z.string().optional().default("https://cu.ardrive.io"),
+    AO: z.any().optional()
 });
 
 /**
@@ -165,7 +166,7 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
     const pid = locationParts[0];
     const endpoint = "/" + locationParts.slice(1).join("/");
     const CU_URL = validatedOptions.CU_URL;
-    ao = connect({ MODE: "legacy", CU_URL });
+    const ao = validatedOptions.AO || connect({ MODE: "legacy", CU_URL });
 
     // Validate process ID
     if (pid.length !== 43) {
