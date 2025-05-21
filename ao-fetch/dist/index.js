@@ -17,7 +17,8 @@ const AoFetchOptionsSchema = z.object({
     body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
     wallet: z.union([z.literal("web_wallet"), z.custom()]).optional().default("web_wallet"),
     CU_URL: z.string().optional().default("https://cu.ardrive.io"),
-    AO: z.any().optional()
+    AO: z.any().optional(),
+    signer: z.any().optional()
 });
 /**
  * Schema for aofetch response
@@ -124,6 +125,7 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
     const endpoint = "/" + locationParts.slice(1).join("/");
     const CU_URL = validatedOptions.CU_URL;
     const ao = validatedOptions.AO ? validatedOptions.AO : (yield import("@permaweb/aoconnect")).connect({ MODE: "legacy", CU_URL });
+    const signer = validatedOptions.signer;
     // Validate process ID
     if (pid.length !== 43) {
         throw new Error("Invalid process ID length. Must be 43 characters.");
@@ -143,7 +145,7 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
                 const mid = yield ao.message({
                     process: pid,
                     tags: requestTags,
-                    signer: validatedOptions.wallet === "web_wallet"
+                    signer: signer || validatedOptions.wallet === "web_wallet"
                         ? (yield import("@permaweb/aoconnect")).createDataItemSigner(window.arweaveWallet)
                         : (yield import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet)
                 });
