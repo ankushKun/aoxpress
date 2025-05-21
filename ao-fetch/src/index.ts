@@ -16,7 +16,8 @@ const AoFetchOptionsSchema = z.object({
     body: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional().default({}),
     wallet: z.union([z.literal("web_wallet"), z.custom<JWKInterface>()]).optional().default("web_wallet"),
     CU_URL: z.string().optional().default("https://cu.ardrive.io"),
-    AO: z.any().optional()
+    AO: z.any().optional(),
+    signer: z.any().optional()
 });
 
 /**
@@ -165,6 +166,7 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
     const endpoint = "/" + locationParts.slice(1).join("/");
     const CU_URL = validatedOptions.CU_URL;
     const ao = validatedOptions.AO ? validatedOptions.AO : (await import("@permaweb/aoconnect")).connect({ MODE: "legacy", CU_URL });
+    const signer = validatedOptions.signer
 
     // Validate process ID
     if (pid.length !== 43) {
@@ -189,7 +191,7 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
                 const mid = await ao.message({
                     process: pid,
                     tags: requestTags,
-                    signer: validatedOptions.wallet === "web_wallet"
+                    signer: signer || validatedOptions.wallet === "web_wallet"
                         ? (await import("@permaweb/aoconnect")).createDataItemSigner(window.arweaveWallet)
                         : (await import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet)
                 });
