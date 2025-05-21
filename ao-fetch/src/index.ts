@@ -191,9 +191,9 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
                 const mid = await ao.message({
                     process: pid,
                     tags: requestTags,
-                    signer: signer || validatedOptions.wallet === "web_wallet"
+                    signer: signer ?? (validatedOptions.wallet === "web_wallet"
                         ? (await import("@permaweb/aoconnect")).createDataItemSigner(window.arweaveWallet)
-                        : (await import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet)
+                        : (await import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet))
                 });
 
                 if (!mid) {

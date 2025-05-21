@@ -145,9 +145,9 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
                 const mid = yield ao.message({
                     process: pid,
                     tags: requestTags,
-                    signer: signer || validatedOptions.wallet === "web_wallet"
+                    signer: signer !== null && signer !== void 0 ? signer : (validatedOptions.wallet === "web_wallet"
                         ? (yield import("@permaweb/aoconnect")).createDataItemSigner(window.arweaveWallet)
-                        : (yield import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet)
+                        : (yield import("@permaweb/aoconnect")).createDataItemSigner(validatedOptions.wallet))
                 });
                 if (!mid) {
                     throw new Error("Failed to send message");
