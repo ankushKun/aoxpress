@@ -8,6 +8,11 @@ declare global {
     }
 }
 
+const TagSchema = z.object({
+    name: z.string(),
+    value: z.string()
+});
+
 /**
  * Schema for aofetch options
  */
@@ -17,7 +22,8 @@ const AoFetchOptionsSchema = z.object({
     wallet: z.union([z.literal("web_wallet"), z.custom<JWKInterface>()]).optional().default("web_wallet"),
     CU_URL: z.string().optional().default("https://cu.ardrive.io"),
     AO: z.any().optional(),
-    signer: z.any().optional()
+    signer: z.any().optional(),
+    tags: z.array(TagSchema).optional().default([])
 });
 
 /**
@@ -84,13 +90,17 @@ const safeJsonParse = (data: string): Record<string, any> => {
 const createRequestTags = (
     endpoint: string,
     method: string,
-    body?: Record<string, string | number | boolean>
+    body?: Record<string, string | number | boolean>,
+    inputTags?: Tag[]
 ): Tag[] => {
     const tags: Tag[] = [
         { name: "Action", value: "Call-Route" },
         { name: "Route", value: endpoint },
         { name: "Method", value: method }
     ];
+    if (inputTags.length > 0) {
+        tags.push(...inputTags);
+    }
 
     if (body) {
         Object.entries(body).forEach(([key, value]) => {
@@ -167,6 +177,7 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
     const CU_URL = validatedOptions.CU_URL;
     const ao = validatedOptions.AO ? validatedOptions.AO : (await import("@permaweb/aoconnect")).connect({ MODE: "legacy", CU_URL });
     const signer = validatedOptions.signer
+    const tags = validatedOptions.tags;
 
     // Validate process ID
     if (pid.length !== 43) {
@@ -174,7 +185,7 @@ const aofetch = async (location: string, options?: AoFetchOptions): Promise<AoFe
     }
 
     try {
-        const requestTags = createRequestTags(endpoint, validatedOptions.method, validatedOptions.body);
+        const requestTags = createRequestTags(endpoint, validatedOptions.method, validatedOptions.body, tags as Tag[]);
 
         switch (validatedOptions.method) {
             case "GET": {
