@@ -9,6 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 // import { connect, createDataItemSigner } from "@permaweb/aoconnect";
 import { z } from "zod";
+const TagSchema = z.object({
+    name: z.string(),
+    value: z.string()
+});
 /**
  * Schema for aofetch options
  */
@@ -18,7 +22,8 @@ const AoFetchOptionsSchema = z.object({
     wallet: z.union([z.literal("web_wallet"), z.custom()]).optional().default("web_wallet"),
     CU_URL: z.string().optional().default("https://cu.ardrive.io"),
     AO: z.any().optional(),
-    signer: z.any().optional()
+    signer: z.any().optional(),
+    tags: z.array(TagSchema).optional().default([])
 });
 /**
  * Schema for aofetch response
@@ -61,12 +66,15 @@ const safeJsonParse = (data) => {
  * @param body Optional request body
  * @returns Array of tags
  */
-const createRequestTags = (endpoint, method, body) => {
+const createRequestTags = (endpoint, method, body, inputTags) => {
     const tags = [
         { name: "Action", value: "Call-Route" },
         { name: "Route", value: endpoint },
         { name: "Method", value: method }
     ];
+    if (inputTags.length > 0) {
+        tags.push(...inputTags);
+    }
     if (body) {
         Object.entries(body).forEach(([key, value]) => {
             tags.push({ name: `X-Body-${key}`, value: value.toString() });
@@ -126,12 +134,13 @@ const aofetch = (location, options) => __awaiter(void 0, void 0, void 0, functio
     const CU_URL = validatedOptions.CU_URL;
     const ao = validatedOptions.AO ? validatedOptions.AO : (yield import("@permaweb/aoconnect")).connect({ MODE: "legacy", CU_URL });
     const signer = validatedOptions.signer;
+    const tags = validatedOptions.tags;
     // Validate process ID
     if (pid.length !== 43) {
         throw new Error("Invalid process ID length. Must be 43 characters.");
     }
     try {
-        const requestTags = createRequestTags(endpoint, validatedOptions.method, validatedOptions.body);
+        const requestTags = createRequestTags(endpoint, validatedOptions.method, validatedOptions.body, tags);
         switch (validatedOptions.method) {
             case "GET": {
                 const res = yield ao.dryrun({

@@ -15,6 +15,16 @@ declare const AoFetchOptionsSchema: z.ZodObject<{
     CU_URL: z.ZodDefault<z.ZodOptional<z.ZodString>>;
     AO: z.ZodOptional<z.ZodAny>;
     signer: z.ZodOptional<z.ZodAny>;
+    tags: z.ZodDefault<z.ZodOptional<z.ZodArray<z.ZodObject<{
+        name: z.ZodString;
+        value: z.ZodString;
+    }, "strip", z.ZodTypeAny, {
+        name?: string;
+        value?: string;
+    }, {
+        name?: string;
+        value?: string;
+    }>, "many">>>;
 }, "strip", z.ZodTypeAny, {
     method?: "GET" | "POST";
     body?: Record<string, string | number | boolean>;
@@ -22,6 +32,10 @@ declare const AoFetchOptionsSchema: z.ZodObject<{
     CU_URL?: string;
     AO?: any;
     signer?: any;
+    tags?: {
+        name?: string;
+        value?: string;
+    }[];
 }, {
     method?: "GET" | "POST";
     body?: Record<string, string | number | boolean>;
@@ -29,6 +43,10 @@ declare const AoFetchOptionsSchema: z.ZodObject<{
     CU_URL?: string;
     AO?: any;
     signer?: any;
+    tags?: {
+        name?: string;
+        value?: string;
+    }[];
 }>;
 /**
  * Schema for aofetch response
